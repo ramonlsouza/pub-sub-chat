@@ -1,19 +1,13 @@
 import React from "react";
 
+import "./Button.css";
+
 function Button(props) {
   return (
     <>
-      <button className="Button-btn" onClick={() => props.handleClick()}>
+      <button className="button" onClick={() => props.handleClick()}>
         {props.label}
       </button>
-
-      <style jsx="true">
-        {`
-          .Button-btn {
-            padding: 10px 0;
-          }
-        `}
-      </style>
     </>
   );
 }

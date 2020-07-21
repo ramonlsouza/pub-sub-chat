@@ -4,6 +4,8 @@ import ReactDOM from "react-dom";
 import TextInput from "./components/TextInput";
 import Button from "./components/Button";
 
+import "./index.css";
+
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -25,31 +27,35 @@ const App = () => {
         } else {
           alert(data.Message);
         }
-        console.log(data);
+      })
+      .catch(function () {
+        alert("error!");
       });
   }
 
   return (
-    <>
-      <TextInput
-        label="Username"
-        placeholder="username"
-        value={username}
-        handleChange={(e) => setUsername(e.target.value)}
-      />
-      <br />
+    <div id="chat-wrapper">
+      <div id="main">
+        <h1>Fluency chat</h1>
 
-      <TextInput
-        label="Password"
-        placeholder="password"
-        type="password"
-        value={password}
-        handleChange={(e) => setPassword(e.target.value)}
-      />
-      <br />
+        <TextInput
+          label="Username"
+          placeholder="username"
+          value={username}
+          handleChange={(e) => setUsername(e.target.value)}
+        />
 
-      <Button label="Login" handleClick={onClick} />
-    </>
+        <TextInput
+          label="Password"
+          placeholder="password"
+          type="password"
+          value={password}
+          handleChange={(e) => setPassword(e.target.value)}
+        />
+
+        <Button label="Login" handleClick={onClick} />
+      </div>
+    </div>
   );
 };
 

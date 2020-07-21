@@ -1,9 +1,11 @@
 import React from "react";
 
+import "./TextInput.css";
+
 function TextInput(props) {
   return (
     <>
-      <label>{props.label}</label>
+      <label className="text-input-label">{props.label}</label>
 
       <input
         className="text-input"
