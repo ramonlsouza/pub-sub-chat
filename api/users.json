@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "username": "A",
+      "level": "A",
+      "password": "A123"
+    },
+    {
+      "username": "B",
+      "level": "B",
+      "password": "B123"
+    },
+    {
+      "username": "C",
+      "level": "C",
+      "password": "C123"
+    },
+    {
+      "username": "D",
+      "level": "D",
+      "password": "D123"
+    }
+  ]
+}
