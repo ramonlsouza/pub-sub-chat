@@ -43,6 +43,11 @@ func generateToken(userId int, userLevel string) string {
 	return token
 }
 
+func parseToken(token string) (string, bool) {
+	//TODO
+	return "", false
+}
+
 func checkUser(username string, password string) (User, bool) {
 	// read and parse json file
 	var userlist Users
