@@ -43,6 +43,39 @@ func generateToken(userId int, userLevel string) string {
 	return token
 }
 
+func checkUser(username string, password string) (User, bool) {
+	// read and parse json file
+	var userlist Users
+	var userData User
+
+	file, openErr := os.Open("users.json")
+
+	if openErr != nil {
+		fmt.Println(openErr)
+		return userData, false
+	}
+
+	bytes, readErr := ioutil.ReadAll(file)
+
+	if readErr != nil {
+		fmt.Println(readErr)
+		return userData, false
+	}
+
+	//push parsed users to userlist
+	json.Unmarshal(bytes, &userlist)
+
+	defer file.Close()
+
+	for i := 0; i < len(userlist.Users); i++ {
+		if userlist.Users[i].Username == username && userlist.Users[i].Password == password {
+			userData = userlist.Users[i]
+			return userData, true
+		}
+	}
+	return userData, false
+}
+
 func auth(res http.ResponseWriter, req *http.Request) {
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
@@ -50,53 +83,24 @@ func auth(res http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		fmt.Fprintf(res, "Authorization should be made with a POST request!\n")
 	} else {
-		// read and parse json file
-		var userlist Users
-		var validUserData User
-		var apiReturn ApiReturn
-
-		file, openErr := os.Open("users.json")
-
-		if openErr != nil {
-			fmt.Println(openErr)
-			return
-		}
-
-		bytes, readErr := ioutil.ReadAll(file)
-
-		if readErr != nil {
-			fmt.Println(readErr)
-			return
-		}
-
-		//push parsed users to userlist
-		json.Unmarshal(bytes, &userlist)
-
-		defer file.Close()
-
 		//search for valid user
 		req.ParseForm()
 
 		user := req.FormValue("username")
 		pass := req.FormValue("password")
 
-		validUser := false
-
-		for i := 0; i < len(userlist.Users); i++ {
-			if userlist.Users[i].Username == user && userlist.Users[i].Password == pass {
-				validUser = true
-				validUserData = userlist.Users[i]
-			}
-		}
-
 		res.Header().Set("Content-Type", "application/json")
+
+		userData, validUser := checkUser(user, pass)
+
+		var apiReturn ApiReturn
 
 		if validUser == true {
 			apiReturn.Error = false
 			apiReturn.Message = ""
-			apiReturn.UserData = validUserData
+			apiReturn.UserData = userData
 
-			apiReturn.Token = generateToken(validUserData.Id, validUserData.Level)
+			apiReturn.Token = generateToken(userData.Id, userData.Level)
 
 			jsonReturn, _ := json.Marshal(apiReturn)
 			fmt.Fprintf(res, string(jsonReturn))
