@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Users struct {
@@ -13,6 +15,7 @@ type Users struct {
 }
 
 type User struct {
+	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Level    string `json:"level"`
 	Password string `json:"password"`
@@ -22,6 +25,22 @@ type ApiReturn struct {
 	Error    bool
 	UserData User
 	Message  string
+	Token    string
+}
+
+func generateToken(userId int, userLevel string) string {
+	//on a real project, the secret key should be in a separated file
+	secret := "not-so-secret-key"
+
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["user_id"] = userId
+	atClaims["user_level"] = userLevel
+	atClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, _ := at.SignedString([]byte(secret))
+	return token
 }
 
 func auth(res http.ResponseWriter, req *http.Request) {
@@ -34,7 +53,6 @@ func auth(res http.ResponseWriter, req *http.Request) {
 		// read and parse json file
 		var userlist Users
 		var validUserData User
-		var validUser = false
 		var apiReturn ApiReturn
 
 		file, openErr := os.Open("users.json")
@@ -62,6 +80,8 @@ func auth(res http.ResponseWriter, req *http.Request) {
 		user := req.FormValue("username")
 		pass := req.FormValue("password")
 
+		validUser := false
+
 		for i := 0; i < len(userlist.Users); i++ {
 			if userlist.Users[i].Username == user && userlist.Users[i].Password == pass {
 				validUser = true
@@ -70,10 +90,13 @@ func auth(res http.ResponseWriter, req *http.Request) {
 		}
 
 		res.Header().Set("Content-Type", "application/json")
+
 		if validUser == true {
 			apiReturn.Error = false
 			apiReturn.Message = ""
 			apiReturn.UserData = validUserData
+
+			apiReturn.Token = generateToken(validUserData.Id, validUserData.Level)
 
 			jsonReturn, _ := json.Marshal(apiReturn)
 			fmt.Fprintf(res, string(jsonReturn))

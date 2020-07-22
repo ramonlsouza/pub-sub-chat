@@ -1,21 +1,25 @@
 {
   "users": [
     {
+      "id": 1,
       "username": "A",
       "level": "A",
       "password": "A123"
     },
     {
+      "id": 2,
       "username": "B",
       "level": "B",
       "password": "B123"
     },
     {
+      "id": 3,
       "username": "C",
       "level": "C",
       "password": "C123"
     },
     {
+      "id": 4,
       "username": "D",
       "level": "D",
       "password": "D123"
