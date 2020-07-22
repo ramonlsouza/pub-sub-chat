@@ -1,89 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
-import { Cookies } from "react-cookie";
+import { useCookies } from "react-cookie";
 
-import TextInput from "./components/TextInput";
-import Button from "./components/Button";
+import LoginForm from "./components/LoginForm";
+import MainPage from "./components/MainPage";
 
 import "./index.css";
 
 const App = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
 
-  const cookies = new Cookies();
-  const cookie_token = cookies.get("token");
-
-  const [token, setToken] = useState(false);
-
-  const api = "http://localhost:8000/";
-
-  function logout() {
-    cookies.remove("token");
-    setToken(false);
-  }
-
-  function login() {
-    fetch(api + "auth", {
-      method: "POST",
-      headers: {
-        "content-type": "application/x-www-form-urlencoded",
-      },
-      body: "username=" + username + "&password=" + password,
-    })
-      .then((resp) => resp.json())
-      .then(function (data) {
-        if (data.Error === false) {
-          alert("login ok!");
-          cookies.set("token", data.Token);
-          setToken(data.token);
-        } else {
-          alert(data.Message);
-        }
-      })
-      .catch(function () {
-        alert("error!");
-      });
-  }
-
-  useEffect(() => {
-    if (cookie_token !== undefined) {
-      setToken(cookie_token);
-    }
-  }, [token, cookie_token]);
+  const apiUrl = "http://localhost:8000/";
 
   return (
-    <div id="chat-wrapper">
-      <div id="main">
-        <h1>Fluency chat</h1>
-        {token === false && (
-          <>
-            <TextInput
-              label="Username"
-              placeholder="username"
-              value={username}
-              handleChange={(e) => setUsername(e.target.value)}
-            />
-
-            <TextInput
-              label="Password"
-              placeholder="password"
-              type="password"
-              value={password}
-              handleChange={(e) => setPassword(e.target.value)}
-            />
-
-            <Button label="Login" handleClick={login} />
-          </>
-        )}
-        {token !== false && (
-          <>
-            <p>Token: {token}</p>
-            <Button label="Logout" handleClick={logout} />
-          </>
-        )}{" "}
-      </div>
-    </div>
+    <>
+      {cookies.token === undefined && (
+        <LoginForm apiUrl={apiUrl} setCookie={setCookie} cookies={cookies} />
+      )}
+      {cookies.token !== undefined && (
+        <MainPage apiUrl={apiUrl} removeCookie={removeCookie} />
+      )}
+    </>
   );
 };
 

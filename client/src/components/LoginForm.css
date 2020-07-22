@@ -1,0 +1,24 @@
+#login-wrapper {
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  height: 99.5vh;
+  flex-direction: column;
+  background-color: #fff;
+}
+#login-main {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 60%;
+}
+#login-main h1 {
+  text-align: center;
+}
+#login-wrapper div {
+  margin: 0;
+}
