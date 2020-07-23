@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -21,11 +22,16 @@ type User struct {
 	Password string `json:"password"`
 }
 
-type ApiReturn struct {
+type AuthReturn struct {
 	Error    bool
 	UserData User
 	Message  string
 	Token    string
+}
+
+type ApiReturn struct {
+	Error   bool
+	Message string
 }
 
 func generateToken(userId int, userLevel string) string {
@@ -56,6 +62,7 @@ func parseToken(tokenString string) (userId int, userLevel string, isValid bool)
 		userId := int(claims["user_id"].(float64))
 		userLevel := claims["user_level"].(string)
 
+		//TODO: check token expiration
 		return userId, userLevel, true
 	} else {
 		return 0, "", false
@@ -96,7 +103,12 @@ func checkUser(username string, password string) (User, bool) {
 	return userData, false
 }
 
-func auth(res http.ResponseWriter, req *http.Request) {
+func sendMessage(token string, message string) bool {
+	//TODO
+	return false
+}
+
+func authRoute(res http.ResponseWriter, req *http.Request) {
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -113,29 +125,63 @@ func auth(res http.ResponseWriter, req *http.Request) {
 
 		userData, validUser := checkUser(user, pass)
 
-		var apiReturn ApiReturn
+		var authReturn AuthReturn
 
 		if validUser == true {
-			apiReturn.Error = false
-			apiReturn.Message = ""
-			apiReturn.UserData = userData
+			authReturn.Error = false
+			authReturn.Message = ""
+			authReturn.UserData = userData
 
-			apiReturn.Token = generateToken(userData.Id, userData.Level)
+			authReturn.Token = generateToken(userData.Id, userData.Level)
 
-			jsonReturn, _ := json.Marshal(apiReturn)
+			jsonReturn, _ := json.Marshal(authReturn)
 			fmt.Fprintf(res, string(jsonReturn))
 		} else {
-			apiReturn.Error = true
-			apiReturn.Message = "invalid credentials!"
+			authReturn.Error = true
+			authReturn.Message = "invalid credentials!"
 
-			jsonReturn, _ := json.Marshal(apiReturn)
+			jsonReturn, _ := json.Marshal(authReturn)
 			fmt.Fprintf(res, string(jsonReturn))
 		}
 	}
 }
 
+func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
+	//enable CORS
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Access-Control-Allow-Headers", "Token,Content-Type")
+
+	if req.Method != "POST" {
+		fmt.Fprintf(res, "Authorization should be made with a POST request!\n")
+	} else {
+		var apiReturn ApiReturn
+
+		req.ParseForm()
+		message := req.FormValue("message")
+		tokenHeader := req.Header.Get("Token")
+
+		splitToken := strings.Split(tokenHeader, " ")
+
+		res.Header().Set("Content-Type", "application/json")
+
+		isSent := sendMessage(splitToken[1], message)
+
+		if isSent == true {
+			apiReturn.Error = false
+			apiReturn.Message = "message sent!"
+		} else {
+			apiReturn.Error = true
+			apiReturn.Message = "error!"
+		}
+
+		jsonReturn, _ := json.Marshal(apiReturn)
+		fmt.Fprintf(res, string(jsonReturn))
+	}
+}
+
 func main() {
-	http.HandleFunc("/auth", auth)
+	http.HandleFunc("/auth", authRoute)
+	http.HandleFunc("/send-message", sendMessageRoute)
 
 	http.ListenAndServe(":8000", nil)
 }
