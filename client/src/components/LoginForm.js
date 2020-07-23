@@ -20,7 +20,7 @@ function LoginForm(props) {
       .then((resp) => resp.json())
       .then(function (data) {
         if (data.Error === false) {
-          props.setCookie("token", data.token);
+          props.setCookie("token", data.Token);
         } else {
           alert(data.Message);
         }
