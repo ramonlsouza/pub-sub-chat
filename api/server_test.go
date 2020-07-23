@@ -37,9 +37,9 @@ func TestToken(t *testing.T) {
 	t.Run("empty input", func(t *testing.T) {
 		token := ""
 
-		_, validToken := parseToken(token)
+		_, _, isValid := parseToken(token)
 
-		if validToken != false {
+		if isValid != false {
 			t.Errorf("Valid return for empty token")
 		}
 	})
@@ -48,9 +48,9 @@ func TestToken(t *testing.T) {
 	t.Run("invalid input", func(t *testing.T) {
 		token := "aaaaaa"
 
-		_, validToken := parseToken(token)
+		_, _, isValid := parseToken(token)
 
-		if validToken != false {
+		if isValid != false {
 			t.Errorf("Valid return for invalid token")
 		}
 	})
@@ -59,9 +59,9 @@ func TestToken(t *testing.T) {
 	t.Run("valid input", func(t *testing.T) {
 		token := generateToken(1, "A")
 
-		_, validToken := parseToken(token)
+		_, _, isValid := parseToken(token)
 
-		if validToken != true {
+		if isValid != true {
 			t.Errorf("Failed auth with valid token")
 		}
 	})

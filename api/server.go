@@ -33,7 +33,6 @@ func generateToken(userId int, userLevel string) string {
 	secret := "not-so-secret-key"
 
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
 	atClaims["user_id"] = userId
 	atClaims["user_level"] = userLevel
 	atClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
@@ -43,9 +42,25 @@ func generateToken(userId int, userLevel string) string {
 	return token
 }
 
-func parseToken(token string) (string, bool) {
-	//TODO
-	return "", false
+func parseToken(tokenString string) (userId int, userLevel string, isValid bool) {
+	//on a real project, the secret key should be in a separated file
+	secret := "not-so-secret-key"
+
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil
+	})
+
+	if err == nil {
+		claims := token.Claims.(jwt.MapClaims)
+
+		userId := int(claims["user_id"].(float64))
+		userLevel := claims["user_level"].(string)
+
+		return userId, userLevel, true
+	} else {
+		return 0, "", false
+	}
+
 }
 
 func checkUser(username string, password string) (User, bool) {
