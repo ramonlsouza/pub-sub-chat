@@ -41,10 +41,11 @@
 #new-message * {
   font-size: 1.1rem;
 }
-#new-message-text {
+.new-message-text {
+  padding-left: 1rem;
   flex: 3;
 }
-#new-message-button {
+.new-message-button {
   flex: 1;
   margin: 0;
   padding: 0;

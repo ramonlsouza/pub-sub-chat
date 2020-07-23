@@ -18,7 +18,11 @@ const App = () => {
         <LoginForm apiUrl={apiUrl} setCookie={setCookie} cookies={cookies} />
       )}
       {cookies.token !== undefined && (
-        <MainPage apiUrl={apiUrl} removeCookie={removeCookie} />
+        <MainPage
+          apiUrl={apiUrl}
+          removeCookie={removeCookie}
+          token={cookies.token}
+        />
       )}
     </>
   );

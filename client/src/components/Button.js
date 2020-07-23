@@ -6,7 +6,7 @@ function Button(props) {
   return (
     <>
       <button
-        className={props.type || "button"}
+        className={props.classlist || "button"}
         onClick={() => props.handleClick()}
       >
         {props.label}
