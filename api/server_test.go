@@ -121,3 +121,74 @@ func TestSendMessage(t *testing.T) {
 		}
 	})
 }
+
+func TestSubscribeUser(t *testing.T) {
+	//user should be subscribed on the correct topics, and only once in each of them
+	createTopics()
+
+	//invalid level - should not be subscribed
+	t.Run("invalid input", func(t *testing.T) {
+		id := 111
+		level := "X"
+
+		subscriptions := subscribe(id, level)
+
+		if subscriptions > 0 {
+			t.Errorf("Invalid level user was subscribed")
+		}
+	})
+
+	//valid id and level - should subscribe to a certain number of topics
+	t.Run("valid level - number of subscriptions", func(t *testing.T) {
+		id := 1
+		level := "A"
+
+		subscriptions := subscribe(id, level)
+
+		if subscriptions != 4 {
+			t.Errorf("Invalid level user was subscribed: level: %s, subscriptions: %d", level, subscriptions)
+		}
+
+		id = 2
+		level = "B"
+
+		subscriptions = subscribe(id, level)
+
+		if subscriptions != 3 {
+			t.Errorf("Invalid level user was subscribed: level: %s, subscriptions: %d", level, subscriptions)
+		}
+
+		id = 3
+		level = "C"
+
+		subscriptions = subscribe(id, level)
+
+		if subscriptions != 2 {
+			t.Errorf("Invalid level user was subscribed: level: %s, subscriptions: %d", level, subscriptions)
+		}
+
+		id = 4
+		level = "D"
+
+		subscriptions = subscribe(id, level)
+
+		if subscriptions != 1 {
+			t.Errorf("Invalid level user was subscribed: level: %s, subscriptions: %d", level, subscriptions)
+		}
+
+	})
+
+	//user should not be subcribed twice on same topic
+	t.Run("user should only be subscribed once on the same topic", func(t *testing.T) {
+		var newSub Subscriber
+		newSub.UserId = 10
+
+		first := subscribeOnce(newSub, findTopic("A"))
+		second := subscribeOnce(newSub, findTopic("A"))
+
+		if first == false || second == true {
+			t.Errorf("User was not subscribed once on a topic")
+		}
+	})
+
+}

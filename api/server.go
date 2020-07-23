@@ -34,6 +34,103 @@ type ApiReturn struct {
 	Message string
 }
 
+type Topic struct {
+	Name        string
+	Subscribers []Subscriber
+}
+
+type Subscriber struct {
+	UserId   int
+	Messages []Message
+}
+
+//TODO: add message date and time?
+type Message struct {
+	SenderId    int
+	MessageText string
+	IsNew       bool
+}
+
+var topics []Topic
+
+func createTopics() {
+	var topicA Topic
+	topicA.Name = "A"
+
+	var topicB Topic
+	topicB.Name = "B"
+
+	var topicC Topic
+	topicC.Name = "C"
+
+	var topicD Topic
+	topicD.Name = "D"
+
+	topics = append(topics, topicA)
+	topics = append(topics, topicB)
+	topics = append(topics, topicC)
+	topics = append(topics, topicD)
+}
+
+func findTopic(name string) (index int) {
+	index = len(topics) - 1
+
+	for i := 0; i < len(topics); i++ {
+		if topics[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+func subscribeOnce(sub Subscriber, index int) bool {
+	exists := false
+
+	for i := 0; i < len(topics[index].Subscribers); i++ {
+		if topics[index].Subscribers[i].UserId == sub.UserId {
+			exists = true
+		}
+	}
+
+	if exists == true {
+		return false
+	} else {
+		topics[index].Subscribers = append(topics[index].Subscribers, sub)
+		return true
+	}
+}
+
+func subscribe(userId int, userLevel string) int {
+	var newSub Subscriber
+	newSub.UserId = userId
+
+	subscriptions := 0
+
+	switch userLevel {
+	case "A":
+		if subscribeOnce(newSub, findTopic("A")) == true {
+			subscriptions++
+		}
+		fallthrough
+	case "B":
+		if subscribeOnce(newSub, findTopic("B")) == true {
+			subscriptions++
+		}
+		fallthrough
+	case "C":
+		if subscribeOnce(newSub, findTopic("C")) == true {
+			subscriptions++
+		}
+		fallthrough
+	case "D":
+		if subscribeOnce(newSub, findTopic("D")) == true {
+			subscriptions++
+		}
+	}
+
+	return subscriptions
+}
+
 func generateToken(userId int, userLevel string) string {
 	//on a real project, the secret key should be in a separated file
 	secret := "not-so-secret-key"
@@ -134,6 +231,9 @@ func authRoute(res http.ResponseWriter, req *http.Request) {
 
 			authReturn.Token = generateToken(userData.Id, userData.Level)
 
+			//subscribe on topics
+			subscribe(userData.Id, userData.Level)
+
 			jsonReturn, _ := json.Marshal(authReturn)
 			fmt.Fprintf(res, string(jsonReturn))
 		} else {
@@ -180,6 +280,8 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	createTopics()
+
 	http.HandleFunc("/auth", authRoute)
 	http.HandleFunc("/send-message", sendMessageRoute)
 
