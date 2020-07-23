@@ -72,6 +72,7 @@ func TestSendMessage(t *testing.T) {
 	1. a valid token
 	2. a message string
 	*/
+	createTopics()
 
 	//invalid input - should return error
 	t.Run("empty message and invalid token", func(t *testing.T) {

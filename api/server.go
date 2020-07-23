@@ -201,7 +201,20 @@ func checkUser(username string, password string) (User, bool) {
 }
 
 func sendMessage(token string, message string) bool {
-	//TODO
+	userId, userLevel, isValid := parseToken(token)
+	index := findTopic(userLevel)
+
+	if isValid == true && message != "" && index >= 0 {
+		var newMessage Message
+		newMessage.IsNew = true
+		newMessage.MessageText = message
+		newMessage.SenderId = userId
+
+		for i := 0; i < len(topics[index].Subscribers); i++ {
+			topics[index].Subscribers[i].Messages = append(topics[index].Subscribers[i].Messages, newMessage)
+		}
+		return true
+	}
 	return false
 }
 
