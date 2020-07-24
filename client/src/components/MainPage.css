@@ -50,13 +50,19 @@
   margin: 0;
   padding: 0;
 }
+.get-messages-button {
+  flex: 1;
+  margin-bottom: 0.6rem;
+  padding: 0;
+}
 @media only screen and (max-width: 600px) {
   #new-message {
-    flex: 2;
+    flex: 3;
     flex-direction: column;
   }
-  #new-message-button {
+  .new-message-button {
     flex: 2;
+    margin-top: 0.6rem;
   }
 }
 .align-flex-end {
