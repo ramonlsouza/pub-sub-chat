@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+//STRUCTS
 type Users struct {
 	Users []User `json:"users"`
 }
@@ -58,10 +59,12 @@ type Message struct {
 	MessageText string
 }
 
+//INSTANCES
 var topics []Topic
 var messages []UserMessages
 var userlist []User
 
+//FUNCTIONS
 func createTopics() {
 	var newTopics = []string{"A", "B", "C", "D"}
 
@@ -238,6 +241,16 @@ func sendMessage(token string, message string) bool {
 	return false
 }
 
+func getUserMessages(token string) []Message {
+	userId, _, _ := parseToken(token)
+
+	userIndex := findUserMessages(userId)
+	userMessages := messages[userIndex].Messages
+
+	return userMessages
+}
+
+//ROUTES
 func authRoute(res http.ResponseWriter, req *http.Request) {
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
@@ -314,15 +327,6 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getUserMessages(token string) []Message {
-	//TODO: write tests!
-	userId, _, _ := parseToken(token)
-
-	userIndex := findUserMessages(userId)
-	userMessages := messages[userIndex].Messages
-
-	return userMessages
-}
 func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
