@@ -3,6 +3,9 @@ package main
 import "testing"
 
 func TestAuth(t *testing.T) {
+	//setup
+	createUsers()
+
 	//empty input - should return error
 	t.Run("empty input", func(t *testing.T) {
 		_, validUser := checkUser("", "")
@@ -24,7 +27,7 @@ func TestAuth(t *testing.T) {
 
 	//valid input - should return user data
 	t.Run("valid input", func(t *testing.T) {
-		_, validUser := checkUser("A", "A123")
+		_, validUser := checkUser("userA", "a123")
 
 		if validUser != true {
 			t.Errorf("Failed auth with valid credentials")
@@ -191,5 +194,45 @@ func TestSubscribeUser(t *testing.T) {
 			t.Errorf("User was not subscribed once on a topic")
 		}
 	})
+}
 
+func TestGetUserMessages(t *testing.T) {
+	//setup
+	createTopics()
+	createUsers()
+
+	//if a token is not informed, return error
+	t.Run("token not informed", func(t *testing.T) {
+		messages := getUserMessages("")
+
+		if messages != nil {
+			t.Errorf("Valid return for empty token")
+		}
+	})
+	//if token is informed, but user has no message list, return error
+	t.Run("user has no message list", func(t *testing.T) {
+		token := generateToken(123, "ABC")
+		messages := getUserMessages(token)
+
+		//send a test message
+		sendMessage(token, "test")
+
+		if messages != nil {
+			t.Errorf("Valid return for unsubscribed user")
+		}
+	})
+
+	//if a user is valid, return user message list
+	t.Run("user has message list", func(t *testing.T) {
+		token := generateToken(2, "B")
+
+		//send a test message
+		sendMessage(token, "test")
+
+		messages := getUserMessages(token)
+
+		if messages == nil {
+			t.Errorf("Invalid return for valid user")
+		}
+	})
 }
