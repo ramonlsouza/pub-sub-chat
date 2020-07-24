@@ -1,0 +1,21 @@
+.message-date-time {
+  color: #999;
+  font-weight: 300;
+  font-size: 0.7rem;
+}
+.message {
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.message .message-inner {
+  background: #eee;
+}
+
+.align-right .message-inner {
+  background: #bdf6ff;
+}
+.message-inner {
+  border-radius: 0.8rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.7rem;
+}

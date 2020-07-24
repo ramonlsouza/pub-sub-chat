@@ -1,0 +1,38 @@
+#new-message {
+  flex: 1;
+  display: flex;
+}
+#new-message * {
+  font-size: 1.1rem;
+}
+.new-message-text {
+  padding-left: 1rem;
+  flex: 3;
+  border: 1px solid #efefef;
+}
+.new-message-button {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  background: #00b5cc;
+  border: none;
+  color: white;
+  margin-left: 0.3rem;
+}
+.get-messages-button {
+  flex: 1;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  border: none;
+}
+@media only screen and (max-width: 600px) {
+  #new-message {
+    flex: 3;
+    flex-direction: column;
+  }
+  .new-message-button {
+    flex: 2;
+    margin-top: 0.6rem;
+    margin-left: 0;
+  }
+}
