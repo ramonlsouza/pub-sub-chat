@@ -82,9 +82,9 @@ func TestSendMessage(t *testing.T) {
 		token := "aaaaaa"
 		message := ""
 
-		isSent := sendMessage(token, message)
+		_, _, isValid := validateMessage(token, message)
 
-		if isSent != false {
+		if isValid == true {
 			t.Errorf("Valid return for empty message and invalid token")
 		}
 	})
@@ -94,9 +94,9 @@ func TestSendMessage(t *testing.T) {
 		token := "aaaaaa"
 		message := "my test message"
 
-		isSent := sendMessage(token, message)
+		_, _, isValid := validateMessage(token, message)
 
-		if isSent != false {
+		if isValid == true {
 			t.Errorf("Valid return for invalid token")
 		}
 	})
@@ -106,9 +106,9 @@ func TestSendMessage(t *testing.T) {
 		token := generateToken(1, "A")
 		message := ""
 
-		isSent := sendMessage(token, message)
+		_, _, isValid := validateMessage(token, message)
 
-		if isSent != false {
+		if isValid == true {
 			t.Errorf("Valid return for valid token and empty message")
 		}
 	})
@@ -118,9 +118,9 @@ func TestSendMessage(t *testing.T) {
 		token := generateToken(1, "A")
 		message := "my test message"
 
-		isSent := sendMessage(token, message)
+		_, _, isValid := validateMessage(token, message)
 
-		if isSent != true {
+		if isValid == false {
 			t.Errorf("Failed to send message with valid token")
 		}
 	})
@@ -213,9 +213,14 @@ func TestGetUserMessages(t *testing.T) {
 	t.Run("user has no message list", func(t *testing.T) {
 		token := generateToken(123, "ABC")
 		messages := getUserMessages(token)
+		testMessage := "test"
 
 		//send a test message
-		sendMessage(token, "test")
+		topicIndex, userData, isValid := validateMessage(token, testMessage)
+
+		if isValid == true {
+			sendMessage(topicIndex, userData, testMessage)
+		}
 
 		if messages != nil {
 			t.Errorf("Valid return for unsubscribed user")
@@ -225,9 +230,14 @@ func TestGetUserMessages(t *testing.T) {
 	//if a user is valid, return user message list
 	t.Run("user has message list", func(t *testing.T) {
 		token := generateToken(2, "B")
+		testMessage := "test"
 
 		//send a test message
-		sendMessage(token, "test")
+		topicIndex, userData, isValid := validateMessage(token, testMessage)
+
+		if isValid == true {
+			sendMessage(topicIndex, userData, testMessage)
+		}
 
 		messages := getUserMessages(token)
 

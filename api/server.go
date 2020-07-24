@@ -217,28 +217,31 @@ func checkUser(username string, password string) (User, bool) {
 	return userData, false
 }
 
-func sendMessage(token string, message string) bool {
+func validateMessage(token string, message string) (int, User, bool) {
 	userId, userLevel, isValid := parseToken(token)
-	index := findTopic(userLevel)
+	topicIndex := findTopic(userLevel)
+	userIndex := findUser(userId)
 
-	if isValid == true && message != "" && index >= 0 {
-		userIndex := findUser(userId)
-
-		if userIndex >= 0 {
-			var newMessage Message
-			newMessage.MessageText = message
-			newMessage.SenderId = userId
-			newMessage.SenderName = userlist[userIndex].Username
-
-			for i := 0; i < len(topics[index].Subscribers); i++ {
-				userIndex := findUserMessages(topics[index].Subscribers[i].UserId)
-				messages[userIndex].Messages = append(messages[userIndex].Messages, newMessage)
-			}
-			return true
-		}
-
+	if isValid == true && message != "" && topicIndex >= 0 && userIndex >= 0 {
+		userData := userlist[userIndex]
+		return topicIndex, userData, true
 	}
-	return false
+
+	var emptyUser User
+	return 0, emptyUser, false
+}
+
+func sendMessage(topicIndex int, userData User, message string) {
+	//call this only after validateMessage returns true!
+	var newMessage Message
+	newMessage.MessageText = message
+	newMessage.SenderId = userData.Id
+	newMessage.SenderName = userData.Username
+
+	for i := 0; i < len(topics[topicIndex].Subscribers); i++ {
+		userIndex := findUserMessages(topics[topicIndex].Subscribers[i].UserId)
+		messages[userIndex].Messages = append(messages[userIndex].Messages, newMessage)
+	}
 }
 
 func getUserMessages(token string) []Message {
@@ -278,7 +281,7 @@ func authRoute(res http.ResponseWriter, req *http.Request) {
 			authReturn.Token = generateToken(userData.Id, userData.Level)
 
 			//subscribe on topics
-			subscribe(userData.Id, userData.Level)
+			go subscribe(userData.Id, userData.Level)
 
 			jsonReturn, _ := json.Marshal(authReturn)
 			fmt.Fprintf(res, string(jsonReturn))
@@ -308,18 +311,19 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 
 		//subscribe on topics
 		userId, userLevel, _ := parseToken(token)
-		subscribe(userId, userLevel)
+		go subscribe(userId, userLevel)
 
 		res.Header().Set("Content-Type", "application/json")
 
-		isSent := sendMessage(token, message)
+		topicIndex, userData, isValid := validateMessage(token, message)
 
-		if isSent == true {
+		if isValid == true {
+			go sendMessage(topicIndex, userData, message)
 			apiReturn.Error = false
 			apiReturn.Message = "message sent!"
 		} else {
 			apiReturn.Error = true
-			apiReturn.Message = "error!"
+			apiReturn.Message = "invalid data!"
 		}
 
 		jsonReturn, _ := json.Marshal(apiReturn)
@@ -337,7 +341,7 @@ func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
 
 	//subscribe on topics
 	userId, userLevel, _ := parseToken(token)
-	subscribe(userId, userLevel)
+	go subscribe(userId, userLevel)
 
 	res.Header().Set("Content-Type", "application/json")
 
@@ -351,13 +355,18 @@ func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
 		jsonReturn, _ := json.Marshal(messagesReturn)
 		fmt.Fprintf(res, string(jsonReturn))
 	} else {
-		//TODO: return error message, token not informed
+		var apiReturn ApiReturn
+		apiReturn.Error = true
+		apiReturn.Message = "token not informed"
+
+		jsonReturn, _ := json.Marshal(apiReturn)
+		fmt.Fprintf(res, string(jsonReturn))
 	}
 }
 
 func main() {
-	go createTopics()
-	go createUsers()
+	createTopics()
+	createUsers()
 
 	http.HandleFunc("/auth", authRoute)
 	http.HandleFunc("/send-message", sendMessageRoute)
