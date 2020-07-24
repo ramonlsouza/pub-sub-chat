@@ -26,7 +26,7 @@ function MainPage(props) {
         if (data.Error === false && data.UserMessages != null) {
           setMessageList(data.UserMessages);
         } else {
-          if (data.Error === true && data.Message != "") {
+          if (data.Error === true && data.Message !== "") {
             alert(data.Message);
           }
         }
