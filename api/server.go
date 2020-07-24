@@ -4,10 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -34,12 +31,22 @@ type ApiReturn struct {
 	Message string
 }
 
+type MessagesReturn struct {
+	Error        bool
+	Message      string
+	UserMessages []Message
+}
+
 type Topic struct {
 	Name        string
 	Subscribers []Subscriber
 }
 
 type Subscriber struct {
+	UserId int
+}
+
+type UserMessages struct {
 	UserId   int
 	Messages []Message
 }
@@ -47,11 +54,13 @@ type Subscriber struct {
 //TODO: add message date and time?
 type Message struct {
 	SenderId    int
+	SenderName  string
 	MessageText string
-	IsNew       bool
 }
 
 var topics []Topic
+var messages []UserMessages
+var userlist []User
 
 func createTopics() {
 	var topicA Topic
@@ -72,15 +81,68 @@ func createTopics() {
 	topics = append(topics, topicD)
 }
 
-func findTopic(name string) (index int) {
-	index = len(topics) - 1
+func createUsers() {
+	var userA User
+	userA.Id = 1
+	userA.Username = "userA"
+	userA.Level = "A"
+	userA.Password = "a123"
 
+	var userB User
+	userB.Id = 2
+	userB.Username = "userB"
+	userB.Level = "B"
+	userB.Password = "b123"
+
+	var userC User
+	userC.Id = 3
+	userC.Username = "userC"
+	userC.Level = "C"
+	userC.Password = "c123"
+
+	var userD User
+	userD.Id = 4
+	userD.Username = "userD"
+	userD.Level = "D"
+	userD.Password = "d123"
+
+	userlist = append(userlist, userA)
+	userlist = append(userlist, userB)
+	userlist = append(userlist, userC)
+	userlist = append(userlist, userD)
+}
+
+func findUser(userId int) (index int) {
+	for i := 0; i < len(userlist); i++ {
+		if userlist[i].Id == userId {
+			return i
+		}
+	}
+	return -1
+}
+
+func findTopic(name string) (index int) {
 	for i := 0; i < len(topics); i++ {
 		if topics[i].Name == name {
 			return i
 		}
 	}
 	return -1
+}
+
+func findUserMessages(userId int) (index int) {
+	index = len(messages)
+
+	for i := 0; i < len(messages); i++ {
+		if messages[i].UserId == userId {
+			return i
+		}
+	}
+	var emptyUserMessages UserMessages
+	emptyUserMessages.UserId = userId
+
+	messages = append(messages, emptyUserMessages)
+	return index
 }
 
 func subscribeOnce(sub Subscriber, index int) bool {
@@ -168,32 +230,11 @@ func parseToken(tokenString string) (userId int, userLevel string, isValid bool)
 }
 
 func checkUser(username string, password string) (User, bool) {
-	// read and parse json file
-	var userlist Users
 	var userData User
 
-	file, openErr := os.Open("users.json")
-
-	if openErr != nil {
-		fmt.Println(openErr)
-		return userData, false
-	}
-
-	bytes, readErr := ioutil.ReadAll(file)
-
-	if readErr != nil {
-		fmt.Println(readErr)
-		return userData, false
-	}
-
-	//push parsed users to userlist
-	json.Unmarshal(bytes, &userlist)
-
-	defer file.Close()
-
-	for i := 0; i < len(userlist.Users); i++ {
-		if userlist.Users[i].Username == username && userlist.Users[i].Password == password {
-			userData = userlist.Users[i]
+	for i := 0; i < len(userlist); i++ {
+		if userlist[i].Username == username && userlist[i].Password == password {
+			userData = userlist[i]
 			return userData, true
 		}
 	}
@@ -205,15 +246,21 @@ func sendMessage(token string, message string) bool {
 	index := findTopic(userLevel)
 
 	if isValid == true && message != "" && index >= 0 {
-		var newMessage Message
-		newMessage.IsNew = true
-		newMessage.MessageText = message
-		newMessage.SenderId = userId
+		userIndex := findUser(userId)
 
-		for i := 0; i < len(topics[index].Subscribers); i++ {
-			topics[index].Subscribers[i].Messages = append(topics[index].Subscribers[i].Messages, newMessage)
+		if userIndex >= 0 {
+			var newMessage Message
+			newMessage.MessageText = message
+			newMessage.SenderId = userId
+			newMessage.SenderName = userlist[userIndex].Username
+
+			for i := 0; i < len(topics[index].Subscribers); i++ {
+				userIndex := findUserMessages(topics[index].Subscribers[i].UserId)
+				messages[userIndex].Messages = append(messages[userIndex].Messages, newMessage)
+			}
+			return true
 		}
-		return true
+
 	}
 	return false
 }
@@ -271,13 +318,15 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 
 		req.ParseForm()
 		message := req.FormValue("message")
-		tokenHeader := req.Header.Get("Token")
+		token := req.Header.Get("Token")
 
-		splitToken := strings.Split(tokenHeader, " ")
+		//subscribe on topics
+		userId, userLevel, _ := parseToken(token)
+		subscribe(userId, userLevel)
 
 		res.Header().Set("Content-Type", "application/json")
 
-		isSent := sendMessage(splitToken[1], message)
+		isSent := sendMessage(token, message)
 
 		if isSent == true {
 			apiReturn.Error = false
@@ -292,11 +341,51 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func getUserMessages(token string) []Message {
+	//TODO: write tests!
+	userId, _, _ := parseToken(token)
+
+	userIndex := findUserMessages(userId)
+	userMessages := messages[userIndex].Messages
+
+	return userMessages
+}
+func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
+	//enable CORS
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Access-Control-Allow-Headers", "Token,Content-Type")
+
+	req.ParseForm()
+	token := req.Header.Get("Token")
+
+	//subscribe on topics
+	userId, userLevel, _ := parseToken(token)
+	subscribe(userId, userLevel)
+
+	res.Header().Set("Content-Type", "application/json")
+
+	if token != "" {
+		userMessages := getUserMessages(token)
+
+		var messagesReturn MessagesReturn
+		messagesReturn.Error = false
+		messagesReturn.UserMessages = userMessages
+
+		jsonReturn, _ := json.Marshal(messagesReturn)
+		fmt.Fprintf(res, string(jsonReturn))
+	} else {
+		//TODO: return error message, token not informed
+	}
+}
+
 func main() {
 	createTopics()
+	createUsers()
 
 	http.HandleFunc("/auth", authRoute)
 	http.HandleFunc("/send-message", sendMessageRoute)
+	http.HandleFunc("/get-messages", getMessagesRoute)
 
+	fmt.Println("server is running on port 8000")
 	http.ListenAndServe(":8000", nil)
 }
