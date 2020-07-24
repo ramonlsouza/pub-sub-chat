@@ -17,7 +17,7 @@ type User struct {
 	Id       int    `json:"id"`
 	Username string `json:"username"`
 	Level    string `json:"level"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 }
 
 type AuthReturn struct {
@@ -52,11 +52,12 @@ type UserMessages struct {
 	Messages []Message
 }
 
-//TODO: add message date and time?
 type Message struct {
 	SenderId    int
 	SenderName  string
 	MessageText string
+	Date        string
+	Time        string
 }
 
 //INSTANCES
@@ -233,10 +234,15 @@ func validateMessage(token string, message string) (int, User, bool) {
 
 func sendMessage(topicIndex int, userData User, message string) {
 	//call this only after validateMessage returns true!
+	// Get the current time.
+	now := time.Now()
+
 	var newMessage Message
 	newMessage.MessageText = message
 	newMessage.SenderId = userData.Id
 	newMessage.SenderName = userData.Username
+	newMessage.Date = now.Format("2006-01-02")
+	newMessage.Time = now.Format("15:04:05")
 
 	for i := 0; i < len(topics[topicIndex].Subscribers); i++ {
 		userIndex := findUserMessages(topics[topicIndex].Subscribers[i].UserId)
