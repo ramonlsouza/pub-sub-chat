@@ -20,6 +20,7 @@ const App = () => {
       {cookies.token !== undefined && (
         <MainPage
           apiUrl={apiUrl}
+          cookies={cookies}
           removeCookie={removeCookie}
           token={cookies.token}
         />

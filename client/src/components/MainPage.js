@@ -11,6 +11,8 @@ function MainPage(props) {
 
   function logout() {
     props.removeCookie("token");
+    props.removeCookie("id");
+    props.removeCookie("username");
   }
   function getMessages() {
     let headers = {};
@@ -25,6 +27,8 @@ function MainPage(props) {
       .then(function (data) {
         if (data.Error === false && data.UserMessages != null) {
           setMessageList(data.UserMessages);
+          var element = document.getElementById("main");
+          element.scrollTop = element.scrollHeight;
         } else {
           if (data.Error === true && data.Message !== "") {
             alert(data.Message);
@@ -34,6 +38,13 @@ function MainPage(props) {
       .catch(function () {
         alert("error!");
       });
+  }
+  function messageSide(senderId) {
+    if (senderId === parseInt(props.cookies.id)) {
+      return "message align-right";
+    } else {
+      return "message";
+    }
   }
   function sendMessage() {
     let headers = {};
@@ -47,8 +58,8 @@ function MainPage(props) {
     })
       .then((resp) => resp.json())
       .then(function (data) {
-        alert(data.Message);
         setMessage("");
+        getMessages();
       })
       .catch(function () {
         alert("error!");
@@ -60,20 +71,26 @@ function MainPage(props) {
       <div id="header">
         <Button
           label="Logout"
-          classlist="button-small align-flex-end"
+          classlist="button-small logout-button align-flex-end"
           handleClick={logout}
         />
         <h1>Fluency chat</h1>
       </div>
       <div id="main">
-        {messageList.map((message) => (
-          <p>
-            <b>{message.SenderName}:</b> {message.MessageText}
-          </p>
+        {messageList.map((message, index) => (
+          <span key={index} className={messageSide(message.SenderId)}>
+            <span className="message-inner">
+              <b>{message.SenderName}: </b>
+              {message.MessageText}{" "}
+              <span className="message-date-time" title={message.Date}>
+                ({message.Time})
+              </span>
+            </span>
+          </span>
         ))}
       </div>
       <Button
-        label="Get new messages"
+        label="Click here to check for new messages"
         classlist="button get-messages-button"
         handleClick={getMessages}
       />

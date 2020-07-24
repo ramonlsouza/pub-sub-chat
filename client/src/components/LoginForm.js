@@ -21,6 +21,8 @@ function LoginForm(props) {
       .then(function (data) {
         if (data.Error === false) {
           props.setCookie("token", data.Token);
+          props.setCookie("id", data.UserData.id);
+          props.setCookie("username", data.UserData.username);
         } else {
           alert(data.Message);
         }
@@ -48,7 +50,11 @@ function LoginForm(props) {
           handleChange={(e) => setPassword(e.target.value)}
         />
 
-        <Button label="Login" handleClick={login} />
+        <Button
+          classlist="button login-button"
+          label="Login"
+          handleClick={login}
+        />
       </div>
     </div>
   );

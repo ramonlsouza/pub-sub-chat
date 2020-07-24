@@ -16,9 +16,18 @@
   justify-content: center;
   width: 60%;
 }
+#login-main input {
+  border: 1px solid #efefef;
+}
 #login-main h1 {
   text-align: center;
 }
 #login-wrapper div {
   margin: 0;
+}
+.login-button {
+  border: none;
+  background: #00b5cc;
+  border: none;
+  color: white;
 }
