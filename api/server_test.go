@@ -27,7 +27,7 @@ func TestAuth(t *testing.T) {
 
 	//valid input - should return user data
 	t.Run("valid input", func(t *testing.T) {
-		_, validUser := checkUser("userA", "a123")
+		_, validUser := checkUser("A", "123")
 
 		if validUser != true {
 			t.Errorf("Failed auth with valid credentials")

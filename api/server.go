@@ -63,53 +63,26 @@ var messages []UserMessages
 var userlist []User
 
 func createTopics() {
-	var topicA Topic
-	topicA.Name = "A"
+	var newTopics = []string{"A", "B", "C", "D"}
 
-	var topicB Topic
-	topicB.Name = "B"
-
-	var topicC Topic
-	topicC.Name = "C"
-
-	var topicD Topic
-	topicD.Name = "D"
-
-	topics = append(topics, topicA)
-	topics = append(topics, topicB)
-	topics = append(topics, topicC)
-	topics = append(topics, topicD)
+	for _, v := range newTopics {
+		var topic Topic
+		topic.Name = v
+		topics = append(topics, topic)
+	}
 }
 
 func createUsers() {
-	var userA User
-	userA.Id = 1
-	userA.Username = "userA"
-	userA.Level = "A"
-	userA.Password = "a123"
+	var newUsers = []string{"A", "B", "C", "D"}
 
-	var userB User
-	userB.Id = 2
-	userB.Username = "userB"
-	userB.Level = "B"
-	userB.Password = "b123"
-
-	var userC User
-	userC.Id = 3
-	userC.Username = "userC"
-	userC.Level = "C"
-	userC.Password = "c123"
-
-	var userD User
-	userD.Id = 4
-	userD.Username = "userD"
-	userD.Level = "D"
-	userD.Password = "d123"
-
-	userlist = append(userlist, userA)
-	userlist = append(userlist, userB)
-	userlist = append(userlist, userC)
-	userlist = append(userlist, userD)
+	for i, v := range newUsers {
+		var user User
+		user.Id = i + 1
+		user.Username = v
+		user.Level = v
+		user.Password = "123"
+		userlist = append(userlist, user)
+	}
 }
 
 func findUser(userId int) (index int) {
@@ -379,8 +352,8 @@ func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	createTopics()
-	createUsers()
+	go createTopics()
+	go createUsers()
 
 	http.HandleFunc("/auth", authRoute)
 	http.HandleFunc("/send-message", sendMessageRoute)
