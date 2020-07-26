@@ -18,8 +18,6 @@ The backend is written in Go and the frontend in React (javascript).
 Go: [https://golang.org/dl/](https://golang.org/dl/)<br/>
 NodeJs: [https://nodejs.org/](https://nodejs.org/)<br/>
 
-## Linux/MacOS
-
 ### API (backend)
 
 run the following commands on terminal:
