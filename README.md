@@ -38,6 +38,34 @@ npm start
 
 react should be running on http://localhost:3000
 
+### Login credentials
+
+There are four test users (one for each level): A, B, C and D
+
+#### Level A user:
+
+username: A
+
+password: 123
+
+#### Level B user:
+
+username: B
+
+password: 123
+
+#### Level C user:
+
+username: C
+
+password: 123
+
+#### Level D user:
+
+username: D
+
+password: 123
+
 ## How to run tests
 
 cd api
