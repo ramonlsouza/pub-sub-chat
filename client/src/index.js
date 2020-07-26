@@ -8,7 +8,7 @@ import MainPage from "./components/MainPage";
 import "./index.css";
 
 const App = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(["token"]);
+  const [cookies, setCookie, removeCookie] = useCookies();
 
   const apiUrl = "http://localhost:8000/";
 
