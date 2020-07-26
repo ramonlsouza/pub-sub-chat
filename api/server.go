@@ -259,12 +259,16 @@ func getUserMessages(token string) []Message {
 	return userMessages
 }
 
-//ROUTES
-func authRoute(res http.ResponseWriter, req *http.Request) {
-	//print request on terminal
+func simpleLog(req *http.Request) {
 	if req.Method == "GET" || req.Method == "POST" {
 		fmt.Printf("%s %s %s\n", req.RemoteAddr, req.Method, req.URL)
 	}
+}
+
+//ROUTES
+func authRoute(res http.ResponseWriter, req *http.Request) {
+	//print request on terminal
+	simpleLog(req)
 
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
@@ -308,9 +312,7 @@ func authRoute(res http.ResponseWriter, req *http.Request) {
 
 func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 	//print request on terminal
-	if req.Method == "GET" || req.Method == "POST" {
-		fmt.Printf("%s %s %s\n", req.RemoteAddr, req.Method, req.URL)
-	}
+	simpleLog(req)
 
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
@@ -349,9 +351,7 @@ func sendMessageRoute(res http.ResponseWriter, req *http.Request) {
 
 func getMessagesRoute(res http.ResponseWriter, req *http.Request) {
 	//print request on terminal
-	if req.Method == "GET" || req.Method == "POST" {
-		fmt.Printf("%s %s %s\n", req.RemoteAddr, req.Method, req.URL)
-	}
+	simpleLog(req)
 
 	//enable CORS
 	res.Header().Set("Access-Control-Allow-Origin", "*")
